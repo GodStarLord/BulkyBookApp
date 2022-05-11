@@ -65,5 +65,26 @@ namespace BulkyBookApp.Controllers
 
             return View(category);
         }
+
+        // POST
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(Category category)
+        {
+            if (category.Name.Equals(category.DisplayOrder.ToString()))
+            {
+                ModelState.AddModelError("Name", "Name and DisplayOrder cannot be same!");
+            }
+
+            if (ModelState.IsValid)
+            {
+                _context.Categories.Update(category);
+                _context.SaveChanges();
+
+                return RedirectToAction("Index");
+            }
+
+            return View(category);
+        }
     }
 }
