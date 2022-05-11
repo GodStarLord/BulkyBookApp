@@ -45,5 +45,25 @@ namespace BulkyBookApp.Controllers
 
             return View(category);
         }
+
+        // GET
+        public IActionResult Edit(int? id)
+        {
+            if (id == null || id == 0)
+            {
+                return NotFound();
+            }
+
+            var category = _context.Categories.Find(id);
+            //var category = _context.Categories.FirstOrDefault(c => c.Id == id);
+            //var category = _context.Categories.SingleOrDefault(c => c.Id == id);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return View(category);
+        }
     }
 }
