@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace BulkyBookApp.Migrations
+namespace BulkyBook.DataAccess.Migrations
 {
     public partial class AddCategoryToDatabase : Migration
     {
