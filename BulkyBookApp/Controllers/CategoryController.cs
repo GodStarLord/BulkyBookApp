@@ -8,16 +8,16 @@ namespace BulkyBookApp.Controllers
 {
     public class CategoryController : Controller
     {
-        private readonly ICategoryRepository _context;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CategoryController(ICategoryRepository context)
+        public CategoryController(IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
         }
 
         public IActionResult Index()
         {
-            IEnumerable<Category> categories = _context.GetAll();
+            IEnumerable<Category> categories = _unitOfWork.Category.GetAll();
             return View(categories);
         }
 
@@ -39,8 +39,8 @@ namespace BulkyBookApp.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Add(category);
-                _context.Save();
+                _unitOfWork.Category.Add(category);
+                _unitOfWork.Save();
 
                 TempData["success"] = "Category Created Successfully!";
 
@@ -58,7 +58,7 @@ namespace BulkyBookApp.Controllers
                 return NotFound();
             }
 
-            var category = _context.GetFirstOrDefault(x => x.Id == id);
+            var category = _unitOfWork.Category.GetFirstOrDefault(x => x.Id == id);
             //var category = _context.Categories.FirstOrDefault(c => c.Id == id);
             //var category = _context.Categories.SingleOrDefault(c => c.Id == id);
 
@@ -82,8 +82,8 @@ namespace BulkyBookApp.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Update(category);
-                _context.Save();
+                _unitOfWork.Category.Update(category);
+                _unitOfWork.Save();
 
                 TempData["success"] = "Category Updated Successfully!";
 
@@ -101,7 +101,7 @@ namespace BulkyBookApp.Controllers
                 return NotFound();
             }
 
-            var category = _context.GetFirstOrDefault(c => c.Id == id);
+            var category = _unitOfWork.Category.GetFirstOrDefault(c => c.Id == id);
             //var category = _context.Categories.FirstOrDefault(c => c.Id == id);
             //var category = _context.Categories.SingleOrDefault(c => c.Id == id);
 
@@ -118,15 +118,15 @@ namespace BulkyBookApp.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeletePOST(int? id)
         {
-            var category = _context.GetFirstOrDefault(c => c.Id == id);
+            var category = _unitOfWork.Category.GetFirstOrDefault(c => c.Id == id);
 
             if (category == null)
             {
                 return NotFound();
             }
 
-            _context.Remove(category);
-            _context.Save();
+            _unitOfWork.Category.Remove(category);
+            _unitOfWork.Save();
 
             TempData["success"] = "Category Deleted Successfully!";
 
