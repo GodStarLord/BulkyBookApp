@@ -1,4 +1,6 @@
 ﻿using BulkyBook.DataAccess.Data;
+using BulkyBook.DataAccess.Repositories.Implementations;
+using BulkyBook.DataAccess.Repositories.Interfaces;
 using BulkyBook.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,16 +8,16 @@ namespace BulkyBookApp.Controllers
 {
     public class CategoryController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ICategoryRepository _context;
 
-        public CategoryController(ApplicationDbContext applicationContext)
+        public CategoryController(ICategoryRepository context)
         {
-            _context = applicationContext;
+            _context = context;
         }
 
         public IActionResult Index()
         {
-            IEnumerable<Category> categories = _context.Categories;
+            IEnumerable<Category> categories = _context.GetAll();
             return View(categories);
         }
 
@@ -37,8 +39,8 @@ namespace BulkyBookApp.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Categories.Add(category);
-                _context.SaveChanges();
+                _context.Add(category);
+                _context.Save();
 
                 TempData["success"] = "Category Created Successfully!";
 
@@ -56,7 +58,7 @@ namespace BulkyBookApp.Controllers
                 return NotFound();
             }
 
-            var category = _context.Categories.Find(id);
+            var category = _context.GetFirstOrDefault(x => x.Id == id);
             //var category = _context.Categories.FirstOrDefault(c => c.Id == id);
             //var category = _context.Categories.SingleOrDefault(c => c.Id == id);
 
@@ -80,8 +82,8 @@ namespace BulkyBookApp.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Categories.Update(category);
-                _context.SaveChanges();
+                _context.Update(category);
+                _context.Save();
 
                 TempData["success"] = "Category Updated Successfully!";
 
@@ -99,7 +101,7 @@ namespace BulkyBookApp.Controllers
                 return NotFound();
             }
 
-            var category = _context.Categories.Find(id);
+            var category = _context.GetFirstOrDefault(c => c.Id == id);
             //var category = _context.Categories.FirstOrDefault(c => c.Id == id);
             //var category = _context.Categories.SingleOrDefault(c => c.Id == id);
 
@@ -116,15 +118,15 @@ namespace BulkyBookApp.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeletePOST(int? id)
         {
-            var category = _context.Categories.Find(id);
+            var category = _context.GetFirstOrDefault(c => c.Id == id);
 
             if (category == null)
             {
                 return NotFound();
             }
 
-            _context.Categories.Remove(category);
-            _context.SaveChanges();
+            _context.Remove(category);
+            _context.Save();
 
             TempData["success"] = "Category Deleted Successfully!";
 
