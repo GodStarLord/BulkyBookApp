@@ -1,5 +1,6 @@
 ﻿using BulkyBook.DataAccess.Repositories.Interfaces;
 using BulkyBook.Models;
+using BulkyBook.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -49,19 +50,16 @@ namespace BulkyBookApp.Areas.Admin.Controllers
         // GET
         public IActionResult Upsert(int? id)
         {
-            Product product = new();
-
-            IEnumerable<SelectListItem> categoryList = _unitOfWork.Category.GetAll()
-                .Select(x => new SelectListItem(
-                    x.Name, 
-                    x.Id.ToString())
-                );
-
-            IEnumerable<SelectListItem> coverTypeList = _unitOfWork.CoverType.GetAll()
-                .Select(x => new SelectListItem(
-                    x.Name,
-                    x.Id.ToString())
-                );
+            ProductVM productVM = new()
+            {
+                Product = new Product(),
+                CategoryList = _unitOfWork.Category
+                    .GetAll()
+                    .Select(x => new SelectListItem(x.Name, x.Id.ToString())),
+                CoverTypeList = _unitOfWork.CoverType
+                    .GetAll()
+                    .Select(x => new SelectListItem(x.Name, x.Id.ToString()))
+            };
 
             if (id == null || id == 0)
             {
@@ -70,17 +68,17 @@ namespace BulkyBookApp.Areas.Admin.Controllers
                 // One Way Binding from Controller to View.
                 // Life Cycle till that HTTP Request, values are lost if redirection occurs
                 // return View(product); => ViewBag is also passed to the View
-                ViewBag.categoryList = categoryList;
-                ViewData["coverTypeList"] = coverTypeList;
+                //ViewBag.categoryList = categoryList;
+                //ViewData["coverTypeList"] = coverTypeList;
 
-                return View(product);
+                return View(productVM);
             }
             else
             {
                 // Update Product
             }
 
-            return View(product);
+            return View(productVM);
         }
 
         // POST
