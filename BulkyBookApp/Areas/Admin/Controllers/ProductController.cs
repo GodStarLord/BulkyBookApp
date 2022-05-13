@@ -10,13 +10,15 @@ namespace BulkyBookApp.Areas.Admin.Controllers
     public class ProductController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ProductController(IUnitOfWork unitOfWork)
+        public ProductController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
         {
             _unitOfWork = unitOfWork;
+            _webHostEnvironment = webHostEnvironment;
         }
 
-        
+
         public IActionResult Index()
         {
             IEnumerable<CoverType> coverTypeList = _unitOfWork.CoverType.GetAll();
@@ -84,14 +86,33 @@ namespace BulkyBookApp.Areas.Admin.Controllers
         // POST
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Upsert(ProductVM productVM, IFormFile formFile)
+        public IActionResult Upsert(ProductVM productVM, IFormFile? formFile)
         {
             if (ModelState.IsValid)
             {
-                //_unitOfWork.CoverType.Update(coverType);
+                string wwwRootPath = _webHostEnvironment.WebRootPath;
+
+                if (formFile != null)
+                {
+                    // Copy file into wwwroot/images/products
+
+                    string fileName = Guid.NewGuid().ToString();
+                    var uploadLocation = Path.Combine(wwwRootPath, @"images\products");
+                    var fileExtension = Path.GetExtension(formFile.FileName);
+
+                    using (var fileStream = new FileStream(Path.Combine(uploadLocation, fileName + fileExtension), FileMode.Create))
+                    {
+                        formFile.CopyTo(fileStream);
+                        // Copy done
+                    }
+
+                    productVM.Product.ImageURL = @"images\products\" + fileName + fileExtension;
+                }
+
+                _unitOfWork.Product.Add(productVM.Product);
                 _unitOfWork.Save();
 
-                TempData["success"] = "Cover Type Updated Successfully!";
+                TempData["success"] = "Product Created Successfully!";
 
                 return RedirectToAction("Index");
             }

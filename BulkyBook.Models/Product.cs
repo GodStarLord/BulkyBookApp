@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -39,6 +40,7 @@ namespace BulkyBook.Models
         [Range(1, 10000)]
         public double Price100 { get; set; }
 
+        [ValidateNever]
         public string ImageURL { get; set; }
 
         // Relations
@@ -46,12 +48,14 @@ namespace BulkyBook.Models
         #region Create Foreign Key relation b/w Product and Category
         [Required]
         public int CategoryId { get; set; }
+        [ValidateNever]
         public Category Category { get; set; }
         #endregion
 
         #region Create Foreign Key relation b/w Product and CoverType
         [Required]
         public int CoverTypeId { get; set; }
+        [ValidateNever]
         public CoverType CoverType { get; set; }
         #endregion
     }
