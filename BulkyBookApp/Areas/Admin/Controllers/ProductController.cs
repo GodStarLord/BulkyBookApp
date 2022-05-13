@@ -66,6 +66,12 @@ namespace BulkyBookApp.Areas.Admin.Controllers
             if (id == null || id == 0)
             {
                 // Create Product
+
+                // One Way Binding from Controller to View.
+                // Life Cycle till that HTTP Request, values are lost if redirection occurs
+                // return View(product); => ViewBag is also passed to the View
+                ViewBag.categoryList = categoryList;    
+
                 return View(product);
             }
             else
