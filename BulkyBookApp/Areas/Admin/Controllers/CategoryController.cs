@@ -1,11 +1,10 @@
-﻿using BulkyBook.DataAccess.Data;
-using BulkyBook.DataAccess.Repositories.Implementations;
-using BulkyBook.DataAccess.Repositories.Interfaces;
+﻿using BulkyBook.DataAccess.Repositories.Interfaces;
 using BulkyBook.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BulkyBookApp.Controllers
+namespace BulkyBookApp.Areas.Admin.Controllers
 {
+    [Area("Admin")]
     public class CategoryController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
