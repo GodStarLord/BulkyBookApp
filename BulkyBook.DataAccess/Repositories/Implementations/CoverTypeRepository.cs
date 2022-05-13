@@ -9,18 +9,18 @@ using System.Threading.Tasks;
 
 namespace BulkyBook.DataAccess.Repositories.Implementations
 {
-    public class CategoryRepository : Repository<Category>, ICategoryRepository
+    public class CoverTypeRepository : Repository<CoverType>, ICoverTypeRepository
     {
         private readonly ApplicationDbContext _context;
 
-        public CategoryRepository(ApplicationDbContext context) : base(context)
+        public CoverTypeRepository(ApplicationDbContext context) : base(context)
         {
             _context = context;
         }
 
-        public void Update(Category category)
+        public void Update(CoverType coverType)
         {
-            _context.Categories.Update(category);
+            _context.CoverTypes.Update(coverType);
         }
     }
 }
