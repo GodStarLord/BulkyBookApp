@@ -21,54 +21,51 @@ namespace BulkyBookApp.Areas.Admin.Controllers
             return View(coverTypeList);
         }
 
+        //// GET
+        //public IActionResult Create()
+        //{
+        //    return View();
+        //}
+
+        //// POST
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public IActionResult Create(CoverType coverType)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        _unitOfWork.CoverType.Add(coverType);
+        //        _unitOfWork.Save();
+
+        //        TempData["success"] = "Cover Type Created Successfully!";
+
+        //        return RedirectToAction("Index");
+        //    }
+
+        //    return View(coverType);
+        //}
+
         // GET
-        public IActionResult Create()
+        public IActionResult Upsert(int? id)
         {
-            return View();
-        }
-
-        // POST
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Create(CoverType coverType)
-        {
-            if (ModelState.IsValid)
-            {
-                _unitOfWork.CoverType.Add(coverType);
-                _unitOfWork.Save();
-
-                TempData["success"] = "Cover Type Created Successfully!";
-
-                return RedirectToAction("Index");
-            }
-
-            return View(coverType);
-        }
-
-        // GET
-        public IActionResult Edit(int? id)
-        {
+            Product product = new Product();
             if (id == null || id == 0)
             {
-                return NotFound();
+                // Create Product
+                return View(product);
             }
-
-            var coverType = _unitOfWork.CoverType.GetFirstOrDefault(x => x.Id == id);
-            //var category = _context.Categories.FirstOrDefault(c => c.Id == id);
-            //var category = _context.Categories.SingleOrDefault(c => c.Id == id);
-
-            if (coverType == null)
+            else
             {
-                return NotFound();
+                // Update Product
             }
 
-            return View(coverType);
+            return View(product);
         }
 
         // POST
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(CoverType coverType)
+        public IActionResult Upsert(CoverType coverType)
         {
             if (ModelState.IsValid)
             {
