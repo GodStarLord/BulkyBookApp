@@ -3,7 +3,7 @@
 <form method="post" asp-action="Upsert" enctype="multipart/form-data">
 	<div class="border p-3 mt-4 row">
 		<div class="row pb-2">
-			<h2 class="text-primary">Edit Cover Type</h2>
+			<h2 class="text-primary">@(Model.Product.Id != 0 ? "Edit" : "Create") Product</h2>
 		</div>
 		@*<div asp-validation-summary="All" class="text-danger"></div>*@
 		<div class="mb-3">
@@ -48,7 +48,7 @@
 		</div>
 		<div class="mb-3">
 			<label asp-for="Product.ImageURL"></label>
-			<input type="file" asp-for="Product.ImageURL" class="form-control"/>
+			<input type="file" asp-for="Product.ImageURL" class="form-control" id="imageInput"/>
 		</div>
 		<div class="mb-3 col-6">
 			<label asp-for="Product.CategoryId"></label>
@@ -65,18 +65,36 @@
 			<span asp-validation-for="Product.CoverTypeId" class="text-danger"></span>
 		</div>
 		<div class="col-12">
-			<button type="submit" class="btn btn-primary" style="width: 150px;">Update</button>
+			@if(Model.Product.Id != 0)
+			{
+				<button type="submit" class="btn btn-primary" style="width: 150px;">Update</button>
+			}
+			else
+			{
+				<button type="submit" class="btn btn-primary" style="width: 150px;" onclick="return ValidateImageInput()">Create</button>
+			}
+			
 			<a asp-controller="Product" asp-action="Index" class="btn btn-secondary" style="width: 150px;">Back to List</a>
 		</div>
-	</div>
-	<div class="row">
-		
 	</div>
 </form>
 
 @section Scripts{
 	@{
-		<partial name="_ValidationScriptsPartial" />
+	<partial name="_ValidationScriptsPartial" />
 	}
+	<script>
+		function ValidateImageInput() {
+            if (document.getElementById("imageInput").value == "") {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Please upload an Image!',
+                });
+                return false;
+			}
+            return true;
+		}
+	</script>
 }
 
