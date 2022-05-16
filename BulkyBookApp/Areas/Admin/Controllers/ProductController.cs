@@ -149,8 +149,7 @@ namespace BulkyBookApp.Areas.Admin.Controllers
         }
 
         // POST
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
+        [HttpDelete]
         public IActionResult Delete(int? id)
         {
             var productFromDB = _unitOfWork.Product.GetFirstOrDefault(c => c.Id == id);
