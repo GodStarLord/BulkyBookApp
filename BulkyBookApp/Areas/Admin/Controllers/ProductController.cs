@@ -99,16 +99,34 @@ namespace BulkyBookApp.Areas.Admin.Controllers
                     var uploadLocation = Path.Combine(wwwRootPath, @"images\products");
                     var fileExtension = Path.GetExtension(formFile.FileName);
 
+                    // Image Exists => Delete Old Image and Copy New Image
+                    if (productVM.Product.ImageURL != null)
+                    {
+                        var oldImage = Path.Combine(wwwRootPath, productVM.Product.ImageURL.TrimStart('\\'));
+
+                        if (System.IO.File.Exists(oldImage))
+                        {
+                            System.IO.File.Delete(oldImage);
+                        }
+                    }
+
                     using (var fileStream = new FileStream(Path.Combine(uploadLocation, fileName + fileExtension), FileMode.Create))
                     {
                         formFile.CopyTo(fileStream);
                         // Copy done
                     }
 
-                    productVM.Product.ImageURL = @"images\products\" + fileName + fileExtension;
+                    productVM.Product.ImageURL = @"\images\products\" + fileName + fileExtension;
                 }
 
-                _unitOfWork.Product.Add(productVM.Product);
+                if (productVM.Product.Id == 0)
+                {
+                    _unitOfWork.Product.Add(productVM.Product);
+                }
+                else
+                {
+                    _unitOfWork.Product.Update(productVM.Product);
+                }
                 _unitOfWork.Save();
 
                 TempData["success"] = "Product Created Successfully!";
