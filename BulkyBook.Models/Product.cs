@@ -30,14 +30,17 @@ namespace BulkyBook.Models
 
         [Required]
         [Range(1, 10000)]
+        [Display(Name = "Price for 1-50")]
         public double Price { get; set; }
 
         [Required]
         [Range(1, 10000)]
+        [Display(Name = "Price for 51-100")]
         public double Price50 { get; set; }
 
         [Required]
         [Range(1, 10000)]
+        [Display(Name = "Price for 100+")]
         public double Price100 { get; set; }
 
         [ValidateNever]
@@ -47,6 +50,7 @@ namespace BulkyBook.Models
 
         #region Create Foreign Key relation b/w Product and Category
         [Required]
+        [Display(Name = "Category")]
         public int CategoryId { get; set; }
         [ValidateNever]
         public Category Category { get; set; }
@@ -54,6 +58,7 @@ namespace BulkyBook.Models
 
         #region Create Foreign Key relation b/w Product and CoverType
         [Required]
+        [Display(Name = "Cover Type")]
         public int CoverTypeId { get; set; }
         [ValidateNever]
         public CoverType CoverType { get; set; }

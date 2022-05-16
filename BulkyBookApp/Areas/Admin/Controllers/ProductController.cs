@@ -77,9 +77,9 @@ namespace BulkyBookApp.Areas.Admin.Controllers
             else
             {
                 // Update Product
+                productVM.Product = _unitOfWork.Product.GetFirstOrDefault(x => x.Id == id);
+                return View(productVM);
             }
-
-            return View(productVM);
         }
 
         // POST
