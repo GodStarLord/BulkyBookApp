@@ -24,9 +24,16 @@ namespace BulkyBookApp.Areas.Customer.Controllers
             return View(productsList);
         }
 
-        public IActionResult Privacy()
+        // GET
+        public IActionResult Details(int? id)
         {
-            return View();
+            ShoppingCart shoppingCart = new()
+            {
+                Count = 1,
+                Product = _unitOfWork.Product.GetFirstOrDefault(x => x.Id == id, includeProperties: "Category,CoverType")
+            };
+
+            return View(shoppingCart);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
