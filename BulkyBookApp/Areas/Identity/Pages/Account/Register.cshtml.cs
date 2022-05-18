@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
+using BulkyBook.DataAccess.Repositories.Interfaces;
 using BulkyBook.Models;
 using BulkyBook.Utility;
 using Microsoft.AspNetCore.Authentication;
@@ -35,8 +36,10 @@ namespace BulkyBookApp.Areas.Identity.Pages.Account
         private readonly IEmailSender _emailSender;
 
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IUnitOfWork _unitOfWork;
 
         public RegisterModel(
+            IUnitOfWork unitOfWork,
             RoleManager<IdentityRole> roleManager,
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
@@ -44,6 +47,7 @@ namespace BulkyBookApp.Areas.Identity.Pages.Account
             ILogger<RegisterModel> logger,
             IEmailSender emailSender)
         {
+            _unitOfWork = unitOfWork;
             _roleManager = roleManager;
             _userManager = userManager;
             _userStore = userStore;
@@ -115,9 +119,13 @@ namespace BulkyBookApp.Areas.Identity.Pages.Account
             public string? PhoneNumber { get; set; }
 
             public string? Role { get; set; }
+            public int? CompanyId { get; set; }
 
             [ValidateNever]
             public IEnumerable<SelectListItem> RoleList { get; set; }
+
+            [ValidateNever]
+            public IEnumerable<SelectListItem> CompanyList { get; set; }
         }
 
 
@@ -135,7 +143,8 @@ namespace BulkyBookApp.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             Input = new InputModel {
-                RoleList = _roleManager.Roles.Select(x => x.Name).Select(x => new SelectListItem(x, x))
+                RoleList = _roleManager.Roles.Select(x => x.Name).Select(x => new SelectListItem(x, x)),
+                CompanyList = _unitOfWork.Company.GetAll().Select(x => new SelectListItem(x.Name, x.Id.ToString()))
             };
         }
 
