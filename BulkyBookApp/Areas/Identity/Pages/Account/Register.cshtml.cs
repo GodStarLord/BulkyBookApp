@@ -165,6 +165,11 @@ namespace BulkyBookApp.Areas.Identity.Pages.Account
                 user.State = Input.State;
                 user.Name = Input.Name;
 
+                if (Input.Role == Constants.Role_User_Comp)
+                {
+                    user.CompanyId = Input.CompanyId;
+                }
+
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)
