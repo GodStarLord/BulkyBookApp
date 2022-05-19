@@ -26,7 +26,38 @@ namespace BulkyBookApp.Areas.Customer.Controllers
             {
                 ListCart = _unitOfWork.ShoppingCart.GetAll(x => x.ApplicationUserId == claim.Value, includeProperties: "Product"),
             };
+
+            foreach (var cart in shoppingCartVM.ListCart)
+            {
+                cart.Price = GetPriceBaseOnQuantity(cart.Count, cart.Product.Price, cart.Product.Price50, cart.Product.Price100);
+            }
+
             return View(shoppingCartVM);
+        }
+
+        private double GetPriceBaseOnQuantity(double quantity, double price, double price50, double price100)
+        {
+            //if (quantity <= 50)
+            //{
+            //    return price;
+            //}
+            //else 
+            //{
+            //    if (quantity <= 100)
+            //    {
+            //        return price50;
+            //    }
+
+            //    return price100;
+            //}
+
+            // Converted the above statements into GuardClause
+
+            if (quantity > 100) return price100;
+
+            if (quantity > 50) return price50;
+
+            return price;
         }
     }
 }
