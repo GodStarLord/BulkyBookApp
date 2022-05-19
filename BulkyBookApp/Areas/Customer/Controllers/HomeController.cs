@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
+using System.Security.Claims;
 using BulkyBook.DataAccess.Repositories.Interfaces;
 using BulkyBook.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BulkyBookApp.Areas.Customer.Controllers
@@ -25,15 +27,34 @@ namespace BulkyBookApp.Areas.Customer.Controllers
         }
 
         // GET
-        public IActionResult Details(int? id)
+        [HttpGet]
+        public IActionResult Details(int productId)
         {
             ShoppingCart shoppingCart = new()
             {
                 Count = 1,
-                Product = _unitOfWork.Product.GetFirstOrDefault(x => x.Id == id, includeProperties: "Category,CoverType")
+                ProductId = productId,
+                Product = _unitOfWork.Product.GetFirstOrDefault(x => x.Id == productId, includeProperties: "Category,CoverType")
             };
 
             return View(shoppingCart);
+        }
+
+        // POST
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public IActionResult Details(ShoppingCart shoppingCart)
+        {
+            // Retrieve currently logged in User in the application
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+            shoppingCart.ApplicationUserId = claim.Value;   // Get Logged In User ID 
+
+            _unitOfWork.ShoppingCart.Add(shoppingCart);
+            _unitOfWork.Save();
+
+            return RedirectToAction(nameof(Index));
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
