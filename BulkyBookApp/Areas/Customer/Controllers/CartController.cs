@@ -36,6 +36,45 @@ namespace BulkyBookApp.Areas.Customer.Controllers
             return View(shoppingCartVM);
         }
 
+        public IActionResult Plus(int cartId)
+        {
+            var cart = _unitOfWork.ShoppingCart.GetFirstOrDefault(x => x.Id == cartId);
+            _unitOfWork.ShoppingCart.IncrementCount(cart, 1);
+
+            _unitOfWork.Save();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult Minus(int cartId)
+        {
+            var cart = _unitOfWork.ShoppingCart.GetFirstOrDefault(x => x.Id == cartId);
+
+            if (cart.Count <= 1)
+            {
+                _unitOfWork.ShoppingCart.Remove(cart);
+            }
+            else
+            {
+                _unitOfWork.ShoppingCart.DecrementCount(cart, 1);
+
+            }
+            _unitOfWork.Save();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult Remove(int cartId)
+        {
+            var cart = _unitOfWork.ShoppingCart.GetFirstOrDefault(x => x.Id == cartId);
+            _unitOfWork.ShoppingCart.Remove(cart);
+
+            _unitOfWork.Save();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        #region Private Methods
         private double GetPriceBaseOnQuantity(double quantity, double price, double price50, double price100)
         {
             //if (quantity <= 50)
@@ -60,5 +99,6 @@ namespace BulkyBookApp.Areas.Customer.Controllers
 
             return price;
         }
+        #endregion
     }
 }

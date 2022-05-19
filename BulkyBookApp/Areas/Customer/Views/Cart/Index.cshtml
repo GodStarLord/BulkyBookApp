@@ -32,17 +32,17 @@
 							</div>
 							<div class="col-6 col-sm-4 col-lg-6 pt-2">
 								<div class="w-75 btn-group" role="group">
-									<a class="btn btn-primary">
+									<a class="btn btn-primary" asp-controller="Cart" asp-action="Plus" asp-route-cartId="@item.Id">
 										<i class="bi bi-plus-square"></i>
 									</a> &nbsp;
-									<a class="btn btn-warning">
+									<a class="btn btn-warning" asp-controller="Cart" asp-action="Minus" asp-route-cartId="@item.Id">
 										<i class="bi bi-dash-square"></i>
 									</a>
 								</div>
 
 							</div>
 							<div class="col-2 col-sm-4 col-lg-2 text-right pt-2">
-								<a class="btn btn-danger">
+								<a class="btn btn-danger" asp-controller="Cart" asp-action="Remove" asp-route-cartId="@item.Id">
 									<i class="bi bi-trash-fill"></i>
 								</a>
 							</div>
