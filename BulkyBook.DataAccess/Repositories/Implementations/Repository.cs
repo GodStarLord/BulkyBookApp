@@ -26,9 +26,15 @@ namespace BulkyBook.DataAccess.Repositories.Implementations
             _dbSet.Add(entity);
         }
 
-        public IEnumerable<T> GetAll(string? includeProperties = null)
+        public IEnumerable<T> GetAll(Expression<Func<T, bool>>? filter = null, string? includeProperties = null)
         {
             IQueryable<T> query = _dbSet;
+            
+            if (filter != null)
+            {
+                query = query.Where(filter);
+
+            }
 
             if (!String.IsNullOrEmpty(includeProperties))
             {

@@ -11,7 +11,7 @@ namespace BulkyBook.DataAccess.Repositories.Interfaces
     {
         // T - Generic Class Type
 
-        IEnumerable<T> GetAll(string? includeProperties = null);
+        IEnumerable<T> GetAll(Expression<Func<T, bool>>? filter = null, string? includeProperties = null);
         void Add(T entity);
         T GetFirstOrDefault(Expression<Func<T, bool>> filter, string? includeProperties = null);
         void Remove(T entity);
