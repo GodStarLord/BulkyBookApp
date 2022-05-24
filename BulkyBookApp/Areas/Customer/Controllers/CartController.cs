@@ -92,8 +92,8 @@ namespace BulkyBookApp.Areas.Customer.Controllers
             shoppingCartVM.OrderHeader.City = shoppingCartVM.OrderHeader.ApplicationUser.City;
             shoppingCartVM.OrderHeader.PhoneNumber = shoppingCartVM.OrderHeader.ApplicationUser.PhoneNumber;
             shoppingCartVM.OrderHeader.State = shoppingCartVM.OrderHeader.ApplicationUser.State;
-            shoppingCartVM.OrderHeader.PostalCode = shoppingCartVM.OrderHeader.PostalCode;
-            shoppingCartVM.OrderHeader.StreetAddress = shoppingCartVM.OrderHeader.StreetAddress;
+            shoppingCartVM.OrderHeader.PostalCode = shoppingCartVM.OrderHeader.ApplicationUser.Postalcode;
+            shoppingCartVM.OrderHeader.StreetAddress = shoppingCartVM.OrderHeader.ApplicationUser.StreetAddress;
 
             foreach (var cart in shoppingCartVM.ListCart)
             {
@@ -101,7 +101,7 @@ namespace BulkyBookApp.Areas.Customer.Controllers
                 shoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
             }
 
-            return View();
+            return View(shoppingCartVM);
         }
 
         #region Private Methods
