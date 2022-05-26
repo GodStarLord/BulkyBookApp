@@ -1,5 +1,7 @@
 ﻿using BulkyBook.DataAccess.Repositories.Interfaces;
+using BulkyBook.Models;
 using BulkyBook.Models.ViewModels;
+using BulkyBook.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -11,6 +13,8 @@ namespace BulkyBookApp.Areas.Customer.Controllers
     public class CartController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        [BindProperty]
+        public ShoppingCartVM ShoppingCartVM { get; set; }
 
         public CartController(IUnitOfWork unitOfWork)
         {
@@ -22,19 +26,19 @@ namespace BulkyBookApp.Areas.Customer.Controllers
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
 
-            ShoppingCartVM shoppingCartVM = new()
+            ShoppingCartVM = new()
             {
                 ListCart = _unitOfWork.ShoppingCart.GetAll(x => x.ApplicationUserId == claim.Value, includeProperties: "Product"),
                 OrderHeader = new()
             };
 
-            foreach (var cart in shoppingCartVM.ListCart)
+            foreach (var cart in ShoppingCartVM.ListCart)
             {
                 cart.Price = GetPriceBaseOnQuantity(cart.Count, cart.Product.Price, cart.Product.Price50, cart.Product.Price100);
-                shoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
+                ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
             }
 
-            return View(shoppingCartVM);
+            return View(ShoppingCartVM);
         }
 
         public IActionResult Plus(int cartId)
@@ -75,33 +79,78 @@ namespace BulkyBookApp.Areas.Customer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // GET
         public IActionResult Summary()
         {
             var claimsIdentity = (ClaimsIdentity)User.Identity;
             var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
 
-            ShoppingCartVM shoppingCartVM = new()
+            ShoppingCartVM = new()
             {
                 ListCart = _unitOfWork.ShoppingCart.GetAll(x => x.ApplicationUserId == claim.Value, includeProperties: "Product"),
                 OrderHeader = new()
             };
 
-            shoppingCartVM.OrderHeader.ApplicationUser = _unitOfWork.ApplicationUser.GetFirstOrDefault(x => x.Id == claim.Value);
+            ShoppingCartVM.OrderHeader.ApplicationUser = _unitOfWork.ApplicationUser.GetFirstOrDefault(x => x.Id == claim.Value);
 
-            shoppingCartVM.OrderHeader.Name = shoppingCartVM.OrderHeader.ApplicationUser.Name;
-            shoppingCartVM.OrderHeader.City = shoppingCartVM.OrderHeader.ApplicationUser.City;
-            shoppingCartVM.OrderHeader.PhoneNumber = shoppingCartVM.OrderHeader.ApplicationUser.PhoneNumber;
-            shoppingCartVM.OrderHeader.State = shoppingCartVM.OrderHeader.ApplicationUser.State;
-            shoppingCartVM.OrderHeader.PostalCode = shoppingCartVM.OrderHeader.ApplicationUser.Postalcode;
-            shoppingCartVM.OrderHeader.StreetAddress = shoppingCartVM.OrderHeader.ApplicationUser.StreetAddress;
+            ShoppingCartVM.OrderHeader.Name = ShoppingCartVM.OrderHeader.ApplicationUser.Name;
+            ShoppingCartVM.OrderHeader.City = ShoppingCartVM.OrderHeader.ApplicationUser.City;
+            ShoppingCartVM.OrderHeader.PhoneNumber = ShoppingCartVM.OrderHeader.ApplicationUser.PhoneNumber;
+            ShoppingCartVM.OrderHeader.State = ShoppingCartVM.OrderHeader.ApplicationUser.State;
+            ShoppingCartVM.OrderHeader.PostalCode = ShoppingCartVM.OrderHeader.ApplicationUser.Postalcode;
+            ShoppingCartVM.OrderHeader.StreetAddress = ShoppingCartVM.OrderHeader.ApplicationUser.StreetAddress;
 
-            foreach (var cart in shoppingCartVM.ListCart)
+            foreach (var cart in ShoppingCartVM.ListCart)
             {
                 cart.Price = GetPriceBaseOnQuantity(cart.Count, cart.Product.Price, cart.Product.Price50, cart.Product.Price100);
-                shoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
+                ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
             }
 
-            return View(shoppingCartVM);
+            return View(ShoppingCartVM);
+        }
+
+        // POST
+        [HttpPost]
+        [ActionName("Summary")]
+        [ValidateAntiForgeryToken]
+        public IActionResult SummaryPOST()
+        {
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+
+            ShoppingCartVM.ListCart = _unitOfWork.ShoppingCart.GetAll(x => x.ApplicationUserId == claim.Value, includeProperties: "Product");
+
+            ShoppingCartVM.OrderHeader.PaymentStatus = Constants.PaymentStatusPending;
+            ShoppingCartVM.OrderHeader.OrderStatus = Constants.StatusPending;
+            ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
+            ShoppingCartVM.OrderHeader.ApplicationUserId = claim.Value;
+
+            foreach (var cart in ShoppingCartVM.ListCart)
+            {
+                cart.Price = GetPriceBaseOnQuantity(cart.Count, cart.Product.Price, cart.Product.Price50, cart.Product.Price100);
+                ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
+            }
+
+            _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
+            _unitOfWork.Save();
+
+            foreach (var cart in ShoppingCartVM.ListCart)
+            {
+                OrderDetails orderDetail = new()
+                {
+                    ProductId = cart.ProductId,
+                    OrderId = ShoppingCartVM.OrderHeader.Id,
+                    Price = cart.Price,
+                    Count = cart.Count
+                };
+                _unitOfWork.OrderDetail.Add(orderDetail);
+                _unitOfWork.Save();
+            }
+
+            _unitOfWork.ShoppingCart.RemoveRange(ShoppingCartVM.ListCart);
+            _unitOfWork.Save();
+
+            return RedirectToAction("Index", "Home");
         }
 
         #region Private Methods
