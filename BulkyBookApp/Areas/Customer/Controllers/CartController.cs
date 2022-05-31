@@ -201,6 +201,29 @@ namespace BulkyBookApp.Areas.Customer.Controllers
             //return RedirectToAction("Index", "Home");
         }
 
+        public IActionResult OrderConfirmation(int id)
+        {
+            OrderHeader orderHeader = _unitOfWork.OrderHeader.GetFirstOrDefault(x => x.Id == id);
+
+            var sessionService = new SessionService();
+            Session session = sessionService.Get(orderHeader.SessionId);
+            
+            // Check Stripe Status
+            if (session.PaymentStatus.ToLower() == "paid")
+            {
+                _unitOfWork.OrderHeader.UpdateStatus(id, Constants.StatusApproved, Constants.PaymentStatusApproved);
+                _unitOfWork.Save();
+            }
+
+            List<ShoppingCart> shoppingCarts = _unitOfWork.ShoppingCart.GetAll(x => x.ApplicationUserId == orderHeader.ApplicationUserId).ToList();
+
+
+            _unitOfWork.ShoppingCart.RemoveRange(shoppingCarts);
+            _unitOfWork.Save();
+
+            return View(id);
+        }
+
         #region Private Methods
         private double GetPriceBaseOnQuantity(double quantity, double price, double price50, double price100)
         {
