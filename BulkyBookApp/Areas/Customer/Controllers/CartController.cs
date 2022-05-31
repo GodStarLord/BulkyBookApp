@@ -158,8 +158,8 @@ namespace BulkyBookApp.Areas.Customer.Controllers
                 },
                 LineItems = new List<SessionLineItemOptions>(),
                 Mode = "payment",
-                SuccessUrl = domain + $"customer/cart/orderconfirmation?id={ShoppingCartVM.OrderHeader.Id}",
-                CancelUrl = domain + $"customer/cart/index"
+                SuccessUrl = domain + $"/customer/cart/orderconfirmation?id={ShoppingCartVM.OrderHeader.Id}",
+                CancelUrl = domain + $"/customer/cart/index"
 
             };
 
