@@ -3,6 +3,7 @@
     var pending = "";
     var inprocess = "";
     var completed = "";
+    var approved = "";
     var all = "";
 
     switch (status)
@@ -15,6 +16,9 @@
             break;
         case "completed":
             completed = "active";
+            break;
+        case "approved":
+            approved = "active";
             break;
         default:
             all = "active";
@@ -30,17 +34,20 @@
         </div>
         <div class="p-2">
             <ul class="list-group list-group-horizontal-sm">
-                <a style="text-decoration: none;" asp-area="Admin" asp-controller="Order" asp-action="Index" asp-route-status="inprocess">
-                <li class="list-group-item @inprocess">In-Process</li>
+                <a style="text-decoration: none;" asp-area="Admin" asp-controller="Order" asp-action="Index" asp-route-statusFilter="inprocess">
+                    <li class="list-group-item @inprocess">In-Process</li>
                 </a>
-                <a style="text-decoration: none;" asp-area="Admin" asp-controller="Order" asp-action="Index" asp-route-status="pending">
-                <li class="list-group-item @pending" >Payment Pending</li>
+                <a style="text-decoration: none;" asp-area="Admin" asp-controller="Order" asp-action="Index" asp-route-statusFilter="pending">
+                    <li class="list-group-item @pending">Payment Pending</li>
                 </a>
-                <a style="text-decoration: none;" asp-area="Admin" asp-controller="Order" asp-action="Index" asp-route-status="completed">
-                <li class="list-group-item @completed">Completed</li>
+                <a style="text-decoration: none;" asp-area="Admin" asp-controller="Order" asp-action="Index" asp-route-statusFilter="approved">
+                    <li class="list-group-item @approved">Approved</li>
                 </a>
-                <a style="text-decoration: none;" asp-area="Admin" asp-controller="Order" asp-action="Index" asp-route-status="all">
-                <li class="list-group-item @all">All</li>
+                <a style="text-decoration: none;" asp-area="Admin" asp-controller="Order" asp-action="Index" asp-route-statusFilter="completed">
+                    <li class="list-group-item @completed">Completed</li>
+                </a>
+                <a style="text-decoration: none;" asp-area="Admin" asp-controller="Order" asp-action="Index" asp-route-statusFilter="all">
+                    <li class="list-group-item @all">All</li>
                 </a>
             </ul>
         </div>
