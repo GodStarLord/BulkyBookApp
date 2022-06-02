@@ -121,8 +121,6 @@ namespace BulkyBookApp.Areas.Customer.Controllers
 
             ShoppingCartVM.ListCart = _unitOfWork.ShoppingCart.GetAll(x => x.ApplicationUserId == claim.Value, includeProperties: "Product");
 
-            ShoppingCartVM.OrderHeader.PaymentStatus = Constants.PaymentStatusPending;
-            ShoppingCartVM.OrderHeader.OrderStatus = Constants.StatusPending;
             ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
             ShoppingCartVM.OrderHeader.ApplicationUserId = claim.Value;
 
@@ -130,6 +128,19 @@ namespace BulkyBookApp.Areas.Customer.Controllers
             {
                 cart.Price = GetPriceBaseOnQuantity(cart.Count, cart.Product.Price, cart.Product.Price50, cart.Product.Price100);
                 ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
+            }
+
+            // Check the user type i.e customer / company user
+            ApplicationUser applicationUser = _unitOfWork.ApplicationUser.GetFirstOrDefault(x => x.Id == claim.Value);
+            if (applicationUser.CompanyId.GetValueOrDefault() == 0) // Customer
+            {
+                ShoppingCartVM.OrderHeader.PaymentStatus = Constants.PaymentStatusPending;
+                ShoppingCartVM.OrderHeader.OrderStatus = Constants.StatusPending;
+            }
+            else
+            {
+                ShoppingCartVM.OrderHeader.PaymentStatus = Constants.PaymentStatusPending;
+                ShoppingCartVM.OrderHeader.OrderStatus = Constants.StatusApproved;
             }
 
             _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
@@ -148,52 +159,59 @@ namespace BulkyBookApp.Areas.Customer.Controllers
                 _unitOfWork.Save();
             }
 
-            // Stripe API Settings
-            var domain = Request.Scheme + "://" + Request.Host.Value;
-            var options = new SessionCreateOptions()
+            if (applicationUser.CompanyId.GetValueOrDefault() == 0) // Customer
             {
-                PaymentMethodTypes = new List<string>
+                // Stripe API Settings
+                var domain = Request.Scheme + "://" + Request.Host.Value;
+                var options = new SessionCreateOptions()
+                {
+                    PaymentMethodTypes = new List<string>
                 {
                     "card",
                 },
-                LineItems = new List<SessionLineItemOptions>(),
-                Mode = "payment",
-                SuccessUrl = domain + $"/customer/cart/orderconfirmation?id={ShoppingCartVM.OrderHeader.Id}",
-                CancelUrl = domain + $"/customer/cart/index"
+                    LineItems = new List<SessionLineItemOptions>(),
+                    Mode = "payment",
+                    SuccessUrl = domain + $"/customer/cart/orderconfirmation?id={ShoppingCartVM.OrderHeader.Id}",
+                    CancelUrl = domain + $"/customer/cart/index"
 
-            };
-
-            foreach (var item in ShoppingCartVM.ListCart)
-            {
-                var sessionLineItem = new SessionLineItemOptions
-                {
-                    PriceData = new SessionLineItemPriceDataOptions
-                    {
-                        UnitAmount = (long)(item.Price * 100),
-                        Currency = "usd",
-                        ProductData = new SessionLineItemPriceDataProductDataOptions
-                        {
-                            Name = item.Product.Title
-                        }
-                    },
-                    Quantity = item.Count,
                 };
-                options.LineItems.Add(sessionLineItem);
+
+                foreach (var item in ShoppingCartVM.ListCart)
+                {
+                    var sessionLineItem = new SessionLineItemOptions
+                    {
+                        PriceData = new SessionLineItemPriceDataOptions
+                        {
+                            UnitAmount = (long)(item.Price * 100),
+                            Currency = "usd",
+                            ProductData = new SessionLineItemPriceDataProductDataOptions
+                            {
+                                Name = item.Product.Title
+                            }
+                        },
+                        Quantity = item.Count,
+                    };
+                    options.LineItems.Add(sessionLineItem);
+                }
+
+                var sessionService = new SessionService();
+                Session session = sessionService.Create(options);
+
+                _unitOfWork.OrderHeader.UpdateStripePaymentId
+                (
+                    ShoppingCartVM.OrderHeader.Id,
+                    session.Id,
+                    session.PaymentIntentId
+                );
+                _unitOfWork.Save();
+
+                Response.Headers.Add("Location", session.Url);
+                return new StatusCodeResult(303);
             }
-
-            var sessionService = new SessionService();
-            Session session = sessionService.Create(options);
-
-            _unitOfWork.OrderHeader.UpdateStripePaymentId
-            (
-                ShoppingCartVM.OrderHeader.Id, 
-                session.Id, 
-                session.PaymentIntentId
-            );
-            _unitOfWork.Save();
-
-            Response.Headers.Add("Location", session.Url);
-            return new StatusCodeResult(303);
+            else
+            {
+                return RedirectToAction("OrderConfirmation", "Cart", new { id = ShoppingCartVM.OrderHeader.Id });
+            }
 
             //_unitOfWork.ShoppingCart.RemoveRange(ShoppingCartVM.ListCart);
             //_unitOfWork.Save();
@@ -205,18 +223,20 @@ namespace BulkyBookApp.Areas.Customer.Controllers
         {
             OrderHeader orderHeader = _unitOfWork.OrderHeader.GetFirstOrDefault(x => x.Id == id);
 
-            var sessionService = new SessionService();
-            Session session = sessionService.Get(orderHeader.SessionId);
-            
-            // Check Stripe Status
-            if (session.PaymentStatus.ToLower() == "paid")
+            if (orderHeader.PaymentStatus != Constants.PaymentStatusDelayedPayment)
             {
-                _unitOfWork.OrderHeader.UpdateStatus(id, Constants.StatusApproved, Constants.PaymentStatusApproved);
-                _unitOfWork.Save();
+                var sessionService = new SessionService();
+                Session session = sessionService.Get(orderHeader.SessionId);
+
+                // Check Stripe Status
+                if (session.PaymentStatus.ToLower() == "paid")
+                {
+                    _unitOfWork.OrderHeader.UpdateStatus(id, Constants.StatusApproved, Constants.PaymentStatusApproved);
+                    _unitOfWork.Save();
+                }
             }
 
             List<ShoppingCart> shoppingCarts = _unitOfWork.ShoppingCart.GetAll(x => x.ApplicationUserId == orderHeader.ApplicationUserId).ToList();
-
 
             _unitOfWork.ShoppingCart.RemoveRange(shoppingCarts);
             _unitOfWork.Save();
