@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BulkyBookApp.Areas.Admin.Controllers
 {
+    [Area("Admin")]
     public class OrderController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -23,7 +24,7 @@ namespace BulkyBookApp.Areas.Admin.Controllers
         public IActionResult GetAll()
         {
             IEnumerable<OrderHeader> orderHeaders = _unitOfWork.OrderHeader.GetAll(includeProperties: "ApplicationUser");
-            return Json(new { data = orderHeaders });
+            return Json(new { tableData = orderHeaders });
         }
         #endregion
     }
