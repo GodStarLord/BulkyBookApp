@@ -46,6 +46,7 @@ namespace BulkyBook.DataAccess.Repositories.Implementations
 
             if (orderFromDb != null)
             {
+                orderFromDb.PaymentDate = DateTime.Now;
                 orderFromDb.PaymentIntentId = paymentInentId;
                 orderFromDb.SessionId = sessionId;
                 
